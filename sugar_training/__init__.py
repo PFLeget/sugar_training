@@ -26,3 +26,5 @@ from .math_toolbox import biweight_S
 
 #from .extinction import extinctionLaw
 from .emfa_analysis import run_emfa_analysis
+
+from . import plotting

@@ -3,7 +3,7 @@
 import numpy as np
 import emfa
 import sugar_training as sugar
-import cPickle
+import pickle
 import os
 
 def sort_eigen(eigenval,eigenvec):
@@ -178,9 +178,9 @@ class emfa_si_analysis:
         if bic:
             self._bic_number_eigenvector()
             
-        toto=self.__dict__
+        dico=self.__dict__
         File=open(pkl_file,'w')
-        cPickle.dump(toto,File)
+        pickle.dump(dico,File)
         File.close()
 
 

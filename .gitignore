@@ -7,6 +7,9 @@ __pycache__/
 sugar_training/*py~
 sugar_training/*pyc
 
+sugar_training/plotting/*py~
+sugar_training/plotting/*pyc
+
 # C extensions
 *.so
 
