@@ -1,21 +1,18 @@
 """interpolate sed of snia using gaussian process."""
 
 import numpy as np
-import cosmogp
-import sugar_training as sugar
-import cPickle
+import sugar_training as st
+import pickle
 import os
-
-path = os.path.dirname(sugar.__file__)
 
 class load_data_bin_gp:
     """load data for gp for one wavelength bin."""
-    def __init__(self, path_input = path + '/data_input/'):
+    def __init__(self, path_input = 'data_input/'):
         """
         create data used for gp for a given bin.
         """
         self.path_input = path_input
-        self.lds = sugar.load_data_sugar(path_input=path_input, training=True, validation=False)
+        self.lds = st.load_data_sugar(path_input=path_input, training=True, validation=False)
         self.lds.load_spectra()
 
         self.wavelength = self.lds.spectra_wavelength[self.lds.sn_name[0]]['0']
@@ -59,7 +56,7 @@ class load_data_bin_gp:
             self.time.append(time)
 
 
-    def load_mean_bin(self, number_bin, average=True):
+    def load_mean_bin(self, number_bin):
         """
         Load the light curve average for the specific wavelength.
         """
@@ -68,42 +65,31 @@ class load_data_bin_gp:
         self.mean_wavelegth = []
 
         nnumber_bin = len(self.lds.spectra_wavelength[self.sn_name[0]]['0'])
-        path = os.path.dirname(sugar.__file__)
-        
-        if average:
-            mean_file = os.path.join(self.path_input, 'average_for_gp.dat')
-            data = np.loadtxt(mean_file)
-            number_points = len(data[:,0]) / nnumber_bin
-            y = np.zeros(number_points)
-            time = np.zeros(number_points)
-            wavelength = np.zeros(number_points)
 
-            y = data[number_points * number_bin: (number_points * number_bin) + number_points, 2]
-            time = data[number_points * number_bin: (number_points * number_bin) + number_points, 0]
-            wavelength = data[number_points * number_bin: (number_points * number_bin) + number_points, 1]
-        else:
-            mean_file = cPickle.load(open(path + '/data_output/gaussian_process/mean_sed_snia_from_gaussian_process.pkl'))
-            y = mean_file['bin%i'%(number_bin)]['mean']
-            time = mean_file['bin%i'%(number_bin)]['time']
-            wavelength = np.ones(len(y)) * mean_file['bin%i'%(number_bin)]['wavelength']
+        mean_file = os.path.join(self.path_input, 'average_for_gp.dat')
+        data = np.loadtxt(mean_file)
+        number_points = len(data[:,0]) / nnumber_bin
+        y = np.zeros(number_points)
+        time = np.zeros(number_points)
+        wavelength = np.zeros(number_points)
+
+        y = data[number_points * number_bin: (number_points * number_bin) + number_points, 2]
+        time = data[number_points * number_bin: (number_points * number_bin) + number_points, 0]
+        wavelength = data[number_points * number_bin: (number_points * number_bin) + number_points, 1]
             
         self.mean = y
         self.mean_time = time
         self.mean_wavelength = wavelength
 
 
-    def build_difference_mean(self, average=True):
+    def build_difference_mean(self):
         """
         Compute systematique difference between average and data.
         """
         self.diff = np.zeros(len(self.sn_name))
-        path = os.path.dirname(sugar.__file__)
-        
-        if average:
-            mean_file = os.path.join(self.path_input,'average_for_gp.dat')
-            data = np.loadtxt(mean_file)
-        else:
-            data = cPickle.load(open(path + '/data_output/gaussian_process/mean_sed_snia_from_gaussian_process.pkl'))
+
+        mean_file = os.path.join(self.path_input,'average_for_gp.dat')
+        data = np.loadtxt(mean_file)
             
         delta_mean = 0
         delta_lambda = 0
@@ -131,14 +117,9 @@ class load_data_bin_gp:
             mean_new_binning = np.zeros(delta_lambda * len(phase))
 
             for Bin in range(delta_lambda):
-                if average:
-                    interpolate_mean = cosmogp.mean.interpolate_mean_1d(self.mean_time,
-                                                                        data[:, 2][Bin * delta_mean: (Bin + 1) * delta_mean],
-                                                                        phase)
-                else:
-                    interpolate_mean = cosmogp.mean.interpolate_mean_1d(data['bin%i'%(Bin)]['time'],
-                                                                        data['bin%i'%(Bin)]['mean'],
-                                                                        phase)
+                interpolate_mean = st.sugargp.mean.interpolate_mean_1d(self.mean_time,
+                                                                       data[:, 2][Bin * delta_mean: (Bin + 1) * delta_mean],
+                                                                       phase)
                 mean_new_binning[Bin * delta: (Bin+1) * delta] = interpolate_mean
 
             reorder = np.arange(delta_lambda * delta).reshape(delta_lambda, delta).T.reshape(-1)
@@ -149,13 +130,13 @@ class load_data_bin_gp:
 
 class gp_sed:
     """Interpolate snia sed using gaussian process."""
-    def __init__(self, path_input = path + '/data_input/',
+    def __init__(self, path_input = 'data_input/',
                  grid_interpolation=np.linspace(-12,48,21),
                  svd_method=False, average=True, double_average=True):
         """
         Inteporlation of sed with gaussian process.
 
-        Will interpolate using cosmogp and a
+        Will interpolate using sugargp and a
         squared exponential kernel. It will fit
         hyperparameters in terms of wavelength by
         assuming no correlation in wavelength.
@@ -205,11 +186,11 @@ class gp_sed:
             print i+1,'/',len(self.wavelength)
 
             self.ldbg.load_data_bin(i)
-            self.ldbg.load_mean_bin(i,average=self.average)
+            self.ldbg.load_mean_bin(i)
 
-            gpr = cosmogp.gaussian_process_nobject(self.ldbg.y, self.ldbg.time, kernel='RBF1D',
-                                                   y_err=self.ldbg.y_err, diff=self.diff, Mean_Y=self.ldbg.mean,
-                                                   Time_mean=self.ldbg.mean_time, substract_mean=False)
+            gpr = st.sugargp.gaussian_process_nobject(self.ldbg.y, self.ldbg.time, kernel='RBF1D',
+                                                      y_err=self.ldbg.y_err, diff=self.diff, Mean_Y=self.ldbg.mean,
+                                                      Time_mean=self.ldbg.mean_time, substract_mean=False)
 
             gpr.nugget = 0.03
 
@@ -218,9 +199,9 @@ class gp_sed:
             self.sigma[i] = gpr.hyperparameters[0]
             self.l[i] = gpr.hyperparameters[1]
 
-            bp = cosmogp.build_pull(self.ldbg.y,self.ldbg.time,gpr.hyperparameters,
-                                    y_err=self.ldbg.y_err, nugget=0.03, y_mean=self.ldbg.mean,
-                                    x_axis_mean=self.ldbg.mean_time, kernel='RBF1D')
+            bp = st.sugargp.build_pull(self.ldbg.y,self.ldbg.time,gpr.hyperparameters,
+                                       y_err=self.ldbg.y_err, nugget=0.03, y_mean=self.ldbg.mean,
+                                       x_axis_mean=self.ldbg.mean_time, kernel='RBF1D')
             bp.compute_pull(diff=self.diff, svd_method=False)
 
             self.pull_average[i] = bp.pull_average
@@ -242,18 +223,18 @@ class gp_sed:
                                                   'time':gpr.new_binning,
                                                   'wavelength':self.wavelength[i]}})
 
-    def write_output(self, path_output = path + '/data_output/gaussian_process/'):
+    def write_output(self, path_output = 'data_output/gaussian_process/'):
         """
         write output from gp interpolation.
         """
         output_directory = path_output
 
         fichier = open(output_directory+'sed_snia_gaussian_process.pkl','w')
-        cPickle.dump(self.dic, fichier)
+        pickle.dump(self.dic, fichier)
         fichier.close()
 
         mean_file = open(output_directory+'mean_sed_snia_from_gaussian_process.pkl','w')
-        cPickle.dump(self.new_mean_gp, mean_file)
+        pickle.dump(self.new_mean_gp, mean_file)
         mean_file.close()
 
         gp_files = open(output_directory+'gp_info.dat','w')

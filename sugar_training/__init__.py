@@ -13,6 +13,7 @@ Some description.
 
 from .load_data import load_data_sugar
 
+from . import sugargp
 from .mean_gp import comp_mean
 from .gaussian_process import load_data_bin_gp
 from .gaussian_process import gp_sed

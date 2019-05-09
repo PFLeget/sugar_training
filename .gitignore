@@ -10,6 +10,9 @@ sugar_training/*pyc
 sugar_training/plotting/*py~
 sugar_training/plotting/*pyc
 
+sugar_training/sugargp/*py~
+sugar_training/sugargp/*pyc
+
 # C extensions
 *.so
 
