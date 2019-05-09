@@ -80,7 +80,7 @@ class load_data_sugar(object):
             self.spectra_wavelength.update({self.sn_name[i]: {}})
             self.spectra_phases.update({self.sn_name[i]: {}})
 
-            for t in range(len(self.dic[self.sn_name[i]].keys())):
+            for t in range(len(self.dic[self.sn_name[i]]['spectra'].keys())):
                 if self.dic[self.sn_name[i]]['spectra'][t]['salt2_phase'] < 50.:
                     self.spectra[self.sn_name[i]].update({'%i'%t: self.dic[self.sn_name[i]]['spectra'][t]['Y']})
                     self.spectra_variance[self.sn_name[i]].update({'%i'%t: self.dic[self.sn_name[i]]['spectra'][t]['V']})

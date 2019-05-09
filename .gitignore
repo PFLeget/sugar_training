@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+.gitignore~
+sugar_training/*py~
+sugar_training/*pyc
+
 # C extensions
 *.so
 
