@@ -3,14 +3,6 @@
 """
 Some description.
 """
-
-#import os
-#import glob
-
-# Automatically import all modules (python files)
-#__all__ = [os.path.basename(m).replace('.py', '') for m in glob.glob("sugar/*.py")
-#           if '__init__' not in m]
-
 from .load_data import load_data_sugar
 
 from . import sugargp
@@ -32,5 +24,9 @@ from .emfa_analysis import run_emfa_analysis
 from .sed_fitting import multilinearfit
 from .sed_fitting import sugar_fitting
 from .make_sugar_sed import make_sugar
+
+from .write_sugar_template import write_sugar
+
+from .compute_sugar_parameter import comp_sugar_param
 
 from . import plotting
