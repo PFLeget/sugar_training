@@ -25,7 +25,11 @@ from .math_toolbox import cholesky_inverse
 from .math_toolbox import biweight_M
 from .math_toolbox import biweight_S
 
-#from .extinction import extinctionLaw
+from .extinction import extinctionLaw
 from .emfa_analysis import run_emfa_analysis
+
+from .sed_fitting import multilinearfit
+from .sed_fitting import sugar_fitting
+from .make_sugar_sed import make_sugar
 
 from . import plotting
