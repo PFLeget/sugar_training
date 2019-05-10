@@ -1,23 +1,23 @@
 ____
 
-**WARNING**: Package under development
+**WARNING**: Package under development, more information will come soon
 
 ____
 
 .. inclusion-marker-do-not-remove                                                                                            
 
-cosmogp
+sugar_training
 --------
 
-cosmogp is a gaussian process code interpolator develloped in python.
+sugar_training is the training code of the SUGAR model develloped in python.
 
-cosmogp was mainly developed to :
+In sugar_training it is possible to find:
 
-*   interpolate in one dimension (like supernova ligth-curves)
-*   interpolate in two dimensions (like PSF within the full focal plane)
+*   The SUGAR training code 
+*   Plotting function to reproduce plots from the article
 
-Mathematical part and fews numerical implematentation are decribe in french 
-`here <https://tel.archives-ouvertes.fr/tel-01467899>`_ (chapter 8, will come in english soon). 
+Waiting the paper, the description of the training can be found in french 
+`here <https://tel.archives-ouvertes.fr/tel-01467899>`_ . 
 
     
 	
@@ -26,37 +26,26 @@ Installation
 
 To install::
 
-  git clone https://github.com/PFLeget/cosmogp.git
-  pip install cosmogp/
+  git clone https://github.com/PFLeget/sugar_training.git
 
-To install in a local directory ``mypath``, use::
+To install sugar_training, use::
 
-  pip install --prefix='mypath' cosmogp/
-
-and do not forget to add it to your PYTHONPATH.
-
-To upgrade to a new version (after a ``git pull`` or a local modification), use::
-  
-  pip install --upgrade (--prefix='mypath') cosmogp/
-  
-Package developers will want to run::
-
-  python setup.py develop
+  cd sugar_training/
+  python setup.py install
 
 Dependencies
 ------------
 
-``cosmogp`` has for now the following dependencies (see the quick
+``sugar_training`` has for now the following dependencies (see the quick
 installs below):
 
-- Python 2.7 and libraries listed in the `requirements <requirements.txt>`_ file
+- libraries listed in the `requirements <requirements.txt>`_ file
    
 
 Python
 ``````
 
-To install the python dependencies, simply do::
+``sugar_training`` can be run in python 2 and python 3 (need to be done)
 
-  pip install -r requirements.txt
 	      
 			  
