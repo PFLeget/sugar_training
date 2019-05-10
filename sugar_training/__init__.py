@@ -24,6 +24,7 @@ from .math_toolbox import svd_inverse
 from .math_toolbox import cholesky_inverse
 from .math_toolbox import biweight_M
 from .math_toolbox import biweight_S
+from .math_toolbox import comp_rms
 
 from .extinction import extinctionLaw
 from .emfa_analysis import run_emfa_analysis
