@@ -1,14 +1,31 @@
 """plot emfa result on spectral features at max."""
 
-from ToolBox import Statistics
-from ToolBox import MPL
-from ToolBox.Signal import loess
 import numpy as np
 import pylab as plt
+from matplotlib.axes import Axes
 import pickle
 import copy
 import os
 import sugar_training as sugar
+
+def make_method(obj):
+    """Decorator to make the function a method of *obj*, e.g.
+    ::
+
+      @make_method(MyClass)
+      def func(instance, ...):
+          ...
+
+    makes *func* a method of `MyClass`, so that one can directly use::
+
+      instance.func()
+    """
+
+    def decorate(f):
+        setattr(obj, f.__name__, f)
+        return f
+
+    return decorate
 
 def SP_set_kwargs(inkw, label, **kwargs):
 
@@ -21,6 +38,50 @@ def SP_set_kwargs(inkw, label, **kwargs):
         outkw.setdefault(key, kwargs[key])
 
     return outkw
+
+def comp_errorellipses(cov, degrees=True):
+    """Compute semi major- and minor axes and position angle [deg] of
+    n error ellipses from (n,2,2) covariance matrices."""
+
+    cov = np.atleast_3d(cov)     # (n,2,2)
+    assert cov.shape[1:]==(2,2), "Input covariance matrix shape is not (n,2,2)"
+
+    # Eigen values, sorted decreasingly
+    eigvals = np.array([ np.linalg.eigvalsh(subcov) for subcov in cov ]) # (n,2)
+    # Ellipse principal axes, from decreasingly-sorted eigen values
+    sigmas = 2*np.sqrt(np.sort(eigvals, axis=1)[:,::-1]) # (n,2)
+    sig1s,sig2s = sigmas.T            # 2 x (n,)
+    # Ellipse angles [rad]
+    angles = 0.5 * np.arctan2( 2*cov[:,0,1], cov[:,0,0]-cov[:,1,1] ) # (n,)
+    if degrees:
+        angles *= 57.295779513082323 # [deg]
+
+    return sig1s,sig2s,angles
+
+
+@make_method(Axes)
+def errorellipses(ax, x, y, cov, nsigma=1, color='b', alpha=0.3, **kwargs):
+    """Plot error ellipses corresponding to input covariance matrices,
+    with len(x)=len(y) and cov.shape=(len(x),2,2)
+
+    *kwargs* are propagated to `EllipseCollection`.
+
+    :return: EllipseCollection
+    """
+    from matplotlib.collections import EllipseCollection
+
+    xys = np.column_stack((x,y)) # Ellipses position
+    sig1s,sig2s,angles = comp_errorellipses(cov, degrees=True) # Ellipses axes
+
+    ec = EllipseCollection(nsigma*sig1s, nsigma*sig2s, angles,
+                           units='xy', offsets=xys, transOffset=ax.transData,
+                           facecolors=kwargs.pop('fc',color),
+                           edgecolors=kwargs.pop('ec',color),
+                           alpha=alpha, **kwargs)
+    ax.add_collection(ec, autolim=True)
+    ax.autoscale_view()         # Accomodate error ellipses
+
+    return ec
 
 
 class emfa_plot:
@@ -67,7 +128,7 @@ class emfa_plot:
         if noise:
             val_100 = (self.val/(len(self.val)))*100.
             noise_level = (len(self.val) - np.sum(self.val)) / len(self.val) * 100.
-            print 'Noise level emfa:', noise_level
+            print('Noise level emfa:', noise_level)
             plt.plot([xlim[0],xlim[1]],noise_level*np.ones(2),'r--',linewidth=3,label='noise level')
         
         plt.xticks(x_axis)
@@ -117,9 +178,9 @@ class emfa_plot:
     
         for j in range(len(new_base[0])):
             for i in range(len(nsil)):
-                dic_corr_vec['corr_vec%i'%(j)][i],dic_corr_vece['corr_vec%ie'%(j)][i]=Statistics.correlation_weighted(data[:,i],new_base[:,j], w=1./(err[:,i]*new_err[:,j]),error=True, symmetric=True)
+                dic_corr_vec['corr_vec%i'%(j)][i],dic_corr_vece['corr_vec%ie'%(j)][i] = sugar.correlation_weighted(data[:,i],new_base[:,j], w=1./(err[:,i]*new_err[:,j]),error=True, symmetric=True)
 
-                neff[j].append(Statistics.neff_weighted(1./(err[:,i]*new_err[:,j])))
+                neff[j].append(sugar.neff_weighted(1./(err[:,i]*new_err[:,j])))
             
                 X[j].append(data[:,i])
                 
@@ -146,19 +207,19 @@ class emfa_plot:
             Ticks.append(4-j)
         
         for i,corr in enumerate(corrs):
-            sig = np.array([Statistics.correlation_significance(np.abs(c),n, sigma=True) for c, n in zip(corr,neff[i])])
+            sig = np.array([stats.correlation_significance(np.abs(c),n, sigma=True) for c, n in zip(corr,neff[i])])
             Sig = copy.deepcopy(sig)
             sig /= bounds[-1]
             cols = cmap(sig)
             mat = [[[0.25,rho*0.25],[rho*0.25,0.25]] for rho in corr]
-            MPL.errorellipses(ax, range(1, len(nsil)+1), [4-i]*len(corr),
-                              mat, color=cols, alpha=1, **{'ec':'k'})
+            errorellipses(ax, range(1, len(nsil)+1), [4-i]*len(corr),
+                          mat, color=cols, alpha=1, **{'ec':'k'})
             for j,c in enumerate(corr):
                 x = (X[i][j]-np.min(X[i][j]))/np.max(X[i][j]-np.min(X[i][j]))-0.5
                 y = (Y[i][j]-np.min(Y[i][j]))/np.max(Y[i][j]-np.min(Y[i][j]))-0.5
                 x += (j+1)
                 y += -np.mean(y) + (4-i)
-                esty = loess(x, y)
+                esty = sugar.loess(x, y)
                 isort = np.argsort(x)
                 lkwargs = SP_set_kwargs({}, 'loess', c='b', alpha=0.7, ls='-', lw=1)
                 if Sig[j]>4 and Sig[j]<5:
@@ -254,10 +315,10 @@ class emfa_plot:
     
         for j in range(len(new_base[0])):
             for i in range(len(nsil)):
-                print j,i
-                dic_corr_vec['corr_vec%i'%(j)][i],dic_corr_vece['corr_vec%ie'%(j)][i]=Statistics.correlation_weighted(data[:,i],new_base[:,j] ,error=True, symmetric=True)
+                print(j,i)
+                dic_corr_vec['corr_vec%i'%(j)][i],dic_corr_vece['corr_vec%ie'%(j)][i]=stats.correlation_weighted(data[:,i],new_base[:,j] ,error=True, symmetric=True)
 
-                neff[j].append(Statistics.neff_weighted(1./(np.ones_like(data[:,i]))))
+                neff[j].append(sugar.neff_weighted(1./(np.ones_like(data[:,i]))))
             
                 X[j].append(data[:,i])
                 
@@ -287,19 +348,19 @@ class emfa_plot:
             Ticks.append(4-j)
         
         for i,corr in enumerate(corrs):
-            sig = np.array([Statistics.correlation_significance(np.abs(c),n, sigma=True) for c, n in zip(corr,neff[i])])
+            sig = np.array([stats.correlation_significance(np.abs(c),n, sigma=True) for c, n in zip(corr,neff[i])])
             Sig = copy.deepcopy(sig)
             sig /= bounds[-1]
             cols = cmap(sig)
             mat = [[[0.25,rho*0.25],[rho*0.25,0.25]] for rho in corr]
-            MPL.errorellipses(ax, range(1, len(nsil)+1), [4-i]*len(corr),
-                              mat, color=cols, alpha=1, **{'ec':'k'})
+            errorellipses(ax, range(1, len(nsil)+1), [4-i]*len(corr),
+                          mat, color=cols, alpha=1, **{'ec':'k'})
             for j,c in enumerate(corr):
                 x = (X[i][j]-np.min(X[i][j]))/np.max(X[i][j]-np.min(X[i][j]))-0.5
                 y = (Y[i][j]-np.min(Y[i][j]))/np.max(Y[i][j]-np.min(Y[i][j]))-0.5
                 x += (j+1)
                 y += -np.mean(y) + (4-i)
-                esty = loess(x, y)
+                esty = sugar.loess(x, y)
                 isort = np.argsort(x)
                 lkwargs = SP_set_kwargs({}, 'loess', c='b', alpha=0.7, ls='-', lw=1)
                 if Sig[j]>4 and Sig[j]<5:

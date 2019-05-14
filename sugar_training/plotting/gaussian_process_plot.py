@@ -121,7 +121,7 @@ def plot_gp_output(plot_mean=False, path_gp = 'data_output/gaussian_process/', p
     plt.plot(gp_output[:,0],gp_output[:,4],'b',linewidth=3)
     err = gp_output[:,4]/np.sqrt(2.*(gp_output[:,5]-1.))
     plt.fill_between(gp_output[:,0],gp_output[:,4]-err,gp_output[:,4]+err,color='b',alpha=0.3)
-    print 'mean STD of PULL : %f'%(np.mean(gp_output[:,4]))
+    print('mean STD of PULL : %f'%(np.mean(gp_output[:,4])))
     plt.xlim(xlim[0],xlim[1])
     plt.yticks(np.linspace(0.0,1.0,6))
     go_log(ax=None, no_label=False)

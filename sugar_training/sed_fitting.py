@@ -190,13 +190,13 @@ class multilinearfit:
             self.pouet=0.
             if (chi2_ODR/(self.dof))<1.:
                 if PRINT:
-                    print 'ok'
+                    print('ok')
             else:
                 while abs((chi2_ODR/(self.dof))-1.)>0.001:
                     
                     if calls<100:
                         if PRINT:
-                            print 'search of dispertion : %i'%(calls+1)
+                            print('search of dispertion : %i'%(calls+1))
                         self._compute_dispertion()
 
                         if self.covx is not None:
@@ -216,7 +216,7 @@ class multilinearfit:
                         calls+=1                        
 
                     else:
-                        print 'error : calls limit are exceeded'
+                        print('error : calls limit are exceeded')
                         break
         
         self.output=output
@@ -348,7 +348,7 @@ class sugar_fitting:
            self.alpha = alpha
         
         for Bin in range(self.nbin):
-            print Bin+1,'/',self.nbin
+            print(Bin+1,'/',self.nbin)
             init = sugar.multilinearfit(self._x,self.y[:,Bin],yerr=self.dy[:,Bin],covx=self.covx)
             init.Multilinearfit(adddisp=True)
             self.alpha[Bin] = init.alpha
@@ -430,8 +430,8 @@ class sugar_fitting:
             if self.control:
                 self.comp_chi2()
                 if abs(self.chi2-chi2)>1e-6:
-                    print 'problem decorelation a_lambda0 h_i'
-                    print "chi2 before %f chi2 after %f"%((chi2,self.chi2))
+                    print('problem decorelation a_lambda0 h_i')
+                    print("chi2 before %f chi2 after %f"%((chi2,self.chi2)))
 
             ## scale of gamma_lambda fixed on the median wavelength
             #if len(self.wavelength)%2==1:
@@ -455,8 +455,8 @@ class sugar_fitting:
             if self.control:
                 self.comp_chi2()
                 if abs(self.chi2-chi2) > 1e-6:
-                    print 'PROBLEME GREY mean'
-                    print "chi2 avant %f chi2 apres %f"%((chi2,self.chi2))
+                    print('PROBLEME GREY mean')
+                    print("chi2 avant %f chi2 apres %f"%((chi2,self.chi2)))
                 chi2 = self.chi2
 
             #decorrelation grey h
@@ -465,7 +465,7 @@ class sugar_fitting:
             if self.control:
                 self.comp_chi2()
                 if abs(self.chi2-chi2)>1e-6:
-                    print "chi2 avant %f chi2 apres %f"%((chi2,self.chi2))
+                    print("chi2 avant %f chi2 apres %f"%((chi2,self.chi2)))
 
     def decorrelate_a_lambda0_h(self):
         self.separate_component()
@@ -637,17 +637,17 @@ class sugar_fitting:
                 self.comp_chi2()
                 self.chi2_save.append(self.chi2)
                 if self.chi2_save[-1]-self.chi2_save[-2]>0:
-                    print 'PROBLEM CHI2'
+                    print('PROBLEM CHI2')
 
             self.m_step()
 
             self.comp_chi2()
             self.chi2_save.append(self.chi2)    
-            print i+1, self.chi2/self.dof
+            print(i+1, self.chi2/self.dof)
             
             if self.control:
                 if self.chi2_save[-1]-self.chi2_save[-2]>0:
-                    print 'PROBLEM CHI2'
+                    print('PROBLEM CHI2')
             i += 1
             if i>maxiter:
                 break

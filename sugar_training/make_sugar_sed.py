@@ -110,7 +110,7 @@ class load_data_to_build_sugar:
         self.CovY = []
 
         for i,sn in enumerate(self.sn_name):
-            print sn
+            print(sn)
             self.Y_cosmo_corrected[i] = self.load_spectra_GP(sn)
 
             Cov = self.load_cov_matrix(sn)

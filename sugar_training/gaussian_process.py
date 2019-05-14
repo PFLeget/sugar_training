@@ -183,7 +183,7 @@ class gp_sed:
         """
         for i in range(len(self.wavelength)):
 
-            print i+1,'/',len(self.wavelength)
+            print(i+1,'/',len(self.wavelength))
 
             self.ldbg.load_data_bin(i)
             self.ldbg.load_mean_bin(i)
@@ -247,7 +247,7 @@ class gp_sed:
         gp_files.close()
 
         for sn in range(len(self.sn_name)):
-            print sn+1,'/',len(self.sn_name)
+            print(sn+1,'/',len(self.sn_name))
             fichier=open(output_directory + self.sn_name[sn] + '.predict','w')
             number_bin = len(self.dic[self.sn_name[sn]].keys())
             for Bin in range(number_bin):

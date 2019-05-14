@@ -185,7 +185,7 @@ solver.converge(nvec,niter)
             df = N.sum(self.Psim1**2,axis=0) - 2*N.sum( diagxxlz * self.Psim1**3,axis=0)
             self.Psi0 += -f/df
             self.Psi0[self.Psi0<0]=0.
-            print self.Psi0
+            print(self.Psi0)
             self.Psim1 = 1./(1./ self.Psim1_org + self.Psi0)
             """
 
@@ -209,7 +209,7 @@ solver.converge(nvec,niter)
                 XML.dot(LMd.T).dot(XMd.T) - XML.dot(dMd).dot(XML.T)
         if f * df < 0:
             if self.verbose:
-                print helpstring + " : %f" % (-f / df)
+                print(helpstring + " : %f" % (-f / df))
             self.Lambda -= dLambda * f / df
         return f, df  # useful for debug purposes
 
@@ -241,7 +241,7 @@ solver.converge(nvec,niter)
         self.Lambda[:, alpha * f > 0] *= N.sqrt(1 + alpha[alpha * f > 0])
         prettyalpha[alpha * f <= 0] = 0
         if self.verbose:
-            print prettyalpha
+            print(prettyalpha)
         return f, df, alpha  # for convergence purposes
 
     def orthogonalize_Lambda(self):
@@ -306,7 +306,7 @@ solver.converge(nvec,niter)
         self.Psi0[deltaPsi0 * f > 0] += deltaPsi0[deltaPsi0 * f > 0]
         self.Psi0[self.Psi0 < 0] = 0.
         if self.verbose:
-            print self.Psi0
+            print(self.Psi0)
         self.Psim1 = 1. / (1. / self.Psim1_org + self.Psi0)
 
     ##### Chi2 and Log-L determination #####
@@ -419,7 +419,7 @@ solver.converge(nvec,niter)
                 self.Lambda = Lambda_after_solve
                 self.solve_z()
                 log_L, chi2_tot = self.log_likelihood(z_solved=True)
-            print "%2d/%d logL=%f Chi2=%f " % (i, niter, log_L, chi2_tot)
+            print("%2d/%d logL=%f Chi2=%f " % (i, niter, log_L, chi2_tot))
 
             if i == niter:
                 break

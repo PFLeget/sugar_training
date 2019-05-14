@@ -1,7 +1,7 @@
 """Realize emfa on spectrale features space."""
 
 import numpy as np
-import emfa
+from . import emfa
 import sugar_training as sugar
 import pickle
 import os

@@ -6,7 +6,7 @@ def svd_inverse(matrix,return_logdet=False):
     U,s,V = linalg.svd(matrix)
     Filtre = (s>10**-15)
     if np.sum(Filtre)!=len(Filtre):
-        print 'Pseudo-inverse decomposition :', len(Filtre)-np.sum(Filtre)
+        print('Pseudo-inverse decomposition :', len(Filtre)-np.sum(Filtre))
 
     inv_S = np.diag(1./s[Filtre])
     inv_matrix = np.dot(V.T[:,Filtre],np.dot(inv_S,U.T[Filtre]))

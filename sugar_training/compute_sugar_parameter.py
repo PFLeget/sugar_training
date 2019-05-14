@@ -112,7 +112,7 @@ def comp_sugar_param(path_input= 'data_input/', path_output = 'data_output/', mo
     dic = {}
     SN = ld.sn_name
     for i,SNN in enumerate(SN):
-        print i 
+        print(i)
         ASED = aligne_SED(path_input, SNN, dic_sed['alpha'], dic_sed['m0'], dic_sed['X'], dic_sed['Rv'])
         ASED.align_SED()
         ASED.align_spectra()

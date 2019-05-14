@@ -4,10 +4,10 @@ import numpy as np
 from scipy.optimize import fmin
 import copy
 try: from svd_tmv import computeSVDInverse as svd
-except: from cosmogp import svd_inverse as svd
+except: from sugar_training.sugargp import svd_inverse as svd
 try: from svd_tmv import computeLDLInverse as chol
-except: from cosmogp import cholesky_inverse as chol
-from cosmogp import return_mean
+except: from sugar_training.sugargp import cholesky_inverse as chol
+from sugar_training.sugargp import return_mean
 
 
 def log_likelihood_gp(y, x_axis, kernel, hyperparameter, nugget,

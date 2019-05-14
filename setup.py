@@ -2,11 +2,8 @@
 
 """Setup script."""
 
-import os
 import glob
-import numpy
-import yaml
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, find_packages
 
 # Package name
 name = 'sugar_training'

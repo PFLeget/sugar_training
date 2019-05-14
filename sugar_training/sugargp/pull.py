@@ -17,7 +17,6 @@ class build_pull:
         the residual for a given kernel and a given
         set of hyperparameter(s).
         """
-        #print "JE SUIS SPECIAL ET JE NE FAIS PAS CE QU IL FAUT"
         self.y = y
         self.x = x
         self.hyperparameters = hyperparameters

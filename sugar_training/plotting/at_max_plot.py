@@ -204,7 +204,7 @@ class at_max_plot:
             plt.subplot(gs[1])
 
             mean_effect = np.std(self.data[:,correction])*np.mean(abs(self.alpha[:,correction]))
-            print 'Mean effect correction%i:'%(correction+1), mean_effect
+            print('Mean effect correction%i:'%(correction+1), mean_effect)
             plt.plot(self.X,self.alpha[:,correction],'k',linewidth=3)#,label=r'Average effect (mag)=%.3f'%((mean_effect)))
             plt.ylabel(r'$\alpha_{%i}(t=0,\lambda)$'%(correction+1),fontsize=16)
             plt.xlabel('wavelength [$\AA$]',fontsize=16)
@@ -219,7 +219,7 @@ class at_max_plot:
 
         if type(Bin) == list:
             for bb in Bin:
-                print bb
+                print(bb)
                 self.plot_bin_Av_slope(bb)                
             return
 
