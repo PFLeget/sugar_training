@@ -67,7 +67,7 @@ class load_data_bin_gp:
 
         mean_file = os.path.join(self.path_input, 'average_for_gp.dat')
         data = np.loadtxt(mean_file)
-        number_points = len(data[:,0]) / nnumber_bin
+        number_points = int(len(data[:,0]) / nnumber_bin)
         y = np.zeros(number_points)
         time = np.zeros(number_points)
         wavelength = np.zeros(number_points)
@@ -243,7 +243,7 @@ class gp_sed:
 
         for sn in range(len(self.sn_name)):
             print(sn+1,'/',len(self.sn_name))
-            fichier=open(output_directory + self.sn_name[sn] + '.predict','w')
+            fichier=open(output_directory + str(self.sn_name[sn]) + '.predict','w')
             number_bin = len(self.dic[self.sn_name[sn]].keys())
             for Bin in range(number_bin):
                 dic = self.dic[self.sn_name[sn]]['bin%i'%(Bin)]

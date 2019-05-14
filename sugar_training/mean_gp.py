@@ -8,7 +8,7 @@ def comp_mean(phase_min=-12, phase_max=48, path_input = 'data_input/', draw=Fals
     slds = sugar.load_data_sugar(path_input=path_input, training=True, validation=False)
     slds.load_spectra()
 
-    sn_name = slds.spectra.keys()
+    sn_name = list(slds.spectra.keys())
 
     wave = slds.spectra_wavelength[sn_name[0]]['0']
     number_bin_wavelength = len(slds.spectra_wavelength[sn_name[0]]['0'])
@@ -27,7 +27,7 @@ def comp_mean(phase_min=-12, phase_max=48, path_input = 'data_input/', draw=Fals
     for sn in range(len(sn_name)):
         print(sn_name[sn], '%i/%i'%((sn+1,len(sn_name))))
         for t in range(len(spectra_bin_phase)):
-            for key in slds.spectra_phases[sn_name[sn]].keys():
+            for key in slds.spectra_phases[sn_name[sn]]:
                 if abs(spectra_bin_phase[t] - slds.spectra_phases[sn_name[sn]][key]) < 1:
                     hist_spectra[sn,number_bin_wavelength*t:number_bin_wavelength*(t+1)] = slds.spectra[sn_name[sn]][key]
                     hist_spectra_weights[sn,number_bin_wavelength*t:number_bin_wavelength*(t+1)] = 1./slds.spectra_variance[sn_name[sn]][key]

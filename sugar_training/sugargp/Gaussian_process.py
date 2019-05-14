@@ -138,16 +138,16 @@ class Gaussian_process:
         assert kernel in kernel_choice, '%s is not in implemented kernel' %(kernel)
 
         if kernel == 'RBF1D':
-            from cosmogp import rbf_kernel_1d as kernel
-            from cosmogp import init_rbf as init_hyperparam
+            from sugar_training.sugargp import rbf_kernel_1d as kernel
+            from sugar_training.sugargp import init_rbf as init_hyperparam
 
             self.kernel = kernel
             sigma, L = init_hyperparam(Time,y)
             self.hyperparameters = np.array([sigma, L])
 
         if kernel == 'RBF2D':
-            from cosmogp import rbf_kernel_2d as kernel
-            from cosmogp import init_rbf as init_hyperparam
+            from sugar_training.sugargp import rbf_kernel_2d as kernel
+            from sugar_training.sugargp import init_rbf as init_hyperparam
 
             self.kernel = kernel
             sigma, L = init_hyperparam(Time,y)
