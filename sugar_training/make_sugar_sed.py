@@ -50,7 +50,7 @@ class load_data_to_build_sugar:
 
         self.number_bin_phase = 0
         self.number_bin_wavelength = 0
-        A=np.loadtxt(self.rep_GP+self.sn_name[0]+'.predict')
+        A=np.loadtxt(os.path.join(self.rep_GP,str(self.sn_name[0])+'.predict'))
         phase = A[:,0]
         wavelength = A[:,1]
         self.TX = wavelength
@@ -58,7 +58,7 @@ class load_data_to_build_sugar:
             if wavelength[i]==wavelength[0]:
                 self.number_bin_phase += 1
 
-        self.number_bin_wavelength = len(wavelength)/self.number_bin_phase
+        self.number_bin_wavelength = int(len(wavelength) / self.number_bin_phase)
 
     def compute_EM_PCA_data(self):
 
@@ -72,7 +72,7 @@ class load_data_to_build_sugar:
         self.Cov_error = cov_new_err
 
     def load_spectra_GP(self,sn_name):
-        A = np.loadtxt(self.rep_GP+sn_name+'.predict')
+        A = np.loadtxt(os.path.join(self.rep_GP, str(sn_name)+'.predict'))
         Y = A[:,2]
         if not self.fit_Av:
             for j,sn_av in enumerate(self.sn_name_Av):
@@ -84,7 +84,7 @@ class load_data_to_build_sugar:
 
     def load_phase_wavelength(self,sn_name):
         
-        A = np.loadtxt(self.rep_GP+sn_name+'.predict')
+        A = np.loadtxt(os.path.join(self.rep_GP, str(sn_name)+'.predict'))
         phase = A[:,0]
         wavelength = A[:,1]
         del A
@@ -92,7 +92,7 @@ class load_data_to_build_sugar:
 
     def load_cov_matrix(self,sn_name):
 
-        A = np.loadtxt(self.rep_GP+sn_name+'.predict')
+        A = np.loadtxt(os.path.join(self.rep_GP, str(sn_name)+'.predict'))
         size_matrix = self.number_bin_phase*self.number_bin_wavelength
         COV = np.zeros((size_matrix,size_matrix))
 
@@ -164,7 +164,7 @@ class make_sugar(load_data_to_build_sugar):
                'chi2':self.sedfit.chi2_save,
                'dof':self.sedfit.dof}
         
-        st.write_pickle(dic, pkl)
+        sugar.write_pickle(dic, pkl)
 
 if __name__ == '__main__':
 
