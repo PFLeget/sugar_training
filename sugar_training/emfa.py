@@ -14,10 +14,10 @@ and n_i = {\cal N}(0,\Psi)
 For usage, see docstring for class EMPCA below
 """
 
-import numpy as N
-import scipy as S
+from __future__ import print_function
+import numpy as np
+import scipy
 import copy
-
 
 class EMPCA:
     """
@@ -35,20 +35,20 @@ solver.converge(nvec,niter)
     It can be made reentrant with solver.converge(nvec,niter,Lambda_init=solver.Lambda)
     """
     def __init__(self, data, weights):
-        assert len(N.shape(
+        assert len(np.shape(
             data)) == 2, "data shall be a 2-dim array, got %i dim" % \
-            len(N.shape(data))
-        assert len(N.shape(
+            len(np.shape(data))
+        assert len(np.shape(
             weights)) == 2, "weights shall be a 2-dim array, got %i dim" % \
-            len(N.shape(data))
+            len(np.shape(data))
         """import data and weights and perform pre-calculations"""
-        self.X = N.array(data)  # ensures also a copy is performed in case
-        self.nobs, self.nvar = N.shape(self.X)
-        self.Psim1_org = N.array(weights)
-        self.Psi0 = N.zeros(self.nvar)
-        assert N.shape(data) == N.shape(
+        self.X = np.array(data)  # ensures also a copy is performed in case
+        self.nobs, self.nvar = np.shape(self.X)
+        self.Psim1_org = np.array(weights)
+        self.Psi0 = np.zeros(self.nvar)
+        assert np.shape(data) == np.shape(
             weights), 'data and weihgts shall have the same dimension'
-        assert N.all(weights >= 0), 'weights shall all be positive'
+        assert np.all(weights >= 0), 'weights shall all be positive'
         # first term of chi2 doesn't depend on any further computation
 
     def init_lambda(self, nvec, Lambda_init=None):
@@ -60,33 +60,34 @@ solver.converge(nvec,niter)
         self.nvec = nvec
 
         self.Psim1 = 1. / (1. / self.Psim1_org + self.Psi0)
-        self.Z = N.zeros((self.nobs, self.nvec))
-        self.beta = N.zeros((self.nobs, self.nvec, self.nvar))
+        self.Z = np.zeros((self.nobs, self.nvec))
+        self.beta = np.zeros((self.nobs, self.nvec, self.nvar))
         # Esperance of Z^2
-        self.Ezz = N.zeros((self.nobs, self.nvec, self.nvec))
+        self.Ezz = np.zeros((self.nobs, self.nvec, self.nvec))
         # definition in store_ILPL
-        self.ILPL = N.zeros((self.nobs, self.nvec, self.nvec))
-        self.ILPLm1 = N.zeros((self.nobs, self.nvec, self.nvec))
+        self.ILPL = np.zeros((self.nobs, self.nvec, self.nvec))
+        self.ILPLm1 = np.zeros((self.nobs, self.nvec, self.nvec))
 
         if Lambda_init is None:
-            # self.Lambda=N.eye(self.nvar,self.nvec)
+            # self.Lambda=np.eye(self.nvar,self.nvec)
             # some heuristic to find suitable starting value :
             # Set LLt to XXt
             # limiting the dimension to sustainable computation
-            maxvals = N.min((self.nobs, self.nvar, N.max((100, nvec))))
-            filt = N.arange(maxvals) * self.nvar / maxvals
-            valp, vecp = N.linalg.eig(
+            maxvals = np.min((self.nobs, self.nvar, np.max((100, nvec))))
+            filt = np.arange(maxvals) * self.nvar / maxvals
+            filt = filt.astype(int)
+            valp, vecp = np.linalg.eig(
                 self.X[:, filt].T.dot(self.X[:, filt]) / len(self.X))
-            order = N.argsort(N.real(valp)[::-1])
+            order = np.argsort(np.real(valp)[::-1])
             # division by 10 helps convergence : better start with too small
             # Lambda
-            self.Lambda = N.zeros((self.nvar, self.nvec))
-            self.Lambda[filt] = N.real(
-                N.sqrt(valp[order]) * vecp[:, order])[:, :nvec] / 10.
+            self.Lambda = np.zeros((self.nvar, self.nvec))
+            self.Lambda[filt] = np.real(
+                np.sqrt(valp[order]) * vecp[:, order])[:, :nvec] / 10.
             # LZZtLt offers usually a better starting point than LLt
             self.solve_z()
             valp, vecp = self.orthogonalize_LZZL()
-            self.Lambda = N.sqrt(valp) * vecp
+            self.Lambda = np.sqrt(valp) * vecp
         else:
             self.Lambda = copy.copy(Lambda_init)
 
@@ -96,20 +97,20 @@ solver.converge(nvec,niter)
         """ store intermediate computation of ( I + \Lambda^T \Psi^-1 \Lambda )
         shall be performed each time self.Lambda has changed """
 
-        for i in xrange(self.nobs):
-            self.ILPL[i] = N.eye(
+        for i in range(self.nobs):
+            self.ILPL[i] = np.eye(
                 self.nvec) + (self.Lambda.T * self.Psim1[i]).dot(self.Lambda)
             # TODO : check possible improvements
-            self.ILPLm1[i] = N.linalg.inv(self.ILPL[i])
+            self.ILPLm1[i] = np.linalg.inv(self.ILPL[i])
 
     def store_LLPm1(self):
         """ LLPm1 is (LLt + Psi)^-1
         WARNING : this assumes ILPL is already stored !
         TODO : this poses storage issue in memory -> shall be deprecated"""
         # taking advantage of Psim1 diagonality and Woodbury matrix inversion
-        self.LLPm1 = N.zeros((self.nobs, self.nvar, self.nvar))
-        for i in xrange(self.nobs):
-            self.LLPm1[i] = N.diag(self.Psim1[i]) - \
+        self.LLPm1 = np.zeros((self.nobs, self.nvar, self.nvar))
+        for i in range(self.nobs):
+            self.LLPm1[i] = np.diag(self.Psim1[i]) - \
                             (self.Lambda.dot(self.ILPLm1[i]).dot(self.Lambda.T)\
                              * self.Psim1[i]).T * self.Psim1[i]
 
@@ -117,7 +118,7 @@ solver.converge(nvec,niter)
         """ LLPm1 is (LLt + Psi)^-1
         WARNING : this assumes ILPL is already stored ! """
         # taking advantage of Psim1 diagonality and Woodbury matrix inversion
-        return N.diag(self.Psim1[i]) - \
+        return np.diag(self.Psim1[i]) - \
                (self.Lambda.dot(self.ILPLm1[i]).dot(self.Lambda.T) * \
                 self.Psim1[i]).T * self.Psim1[i]
 
@@ -130,12 +131,12 @@ solver.converge(nvec,niter)
                    = ILPLm1 \Lambda^T Psi^-1 X
         """
         self.store_ILPL()
-        for i in xrange(self.nobs):
+        for i in range(self.nobs):
             # TODO : is it possible to improve with cholesky ?
             # ILPLm1 seems anyway to be invoked
             self.beta[i] = self.ILPLm1[i].dot(self.Lambda.T * self.Psim1[i])
             self.Z[i] = self.beta[i].dot(self.X[i])
-            self.Ezz[i] = self.ILPLm1[i] + N.outer(self.Z[i], self.Z[i])
+            self.Ezz[i] = self.ILPLm1[i] + np.outer(self.Z[i], self.Z[i])
 
     def center_and_solve_z(self):
         """like solve_z but in addition recenter X
@@ -145,34 +146,34 @@ solver.converge(nvec,niter)
         # the 2 operations
 
         self.store_ILPL()
-        Deltax = N.zeros(self.nvar)
-        Weights = N.zeros((self.nvar, self.nvar))
-        for i in xrange(self.nobs):
+        Deltax = np.zeros(self.nvar)
+        Weights = np.zeros((self.nvar, self.nvar))
+        for i in range(self.nobs):
             self.beta[i] = self.ILPLm1[i].dot(self.Lambda.T * self.Psim1[i])
             # speeding-up as Psim1 is diagonal
             w = self.Psim1[i] * \
-                (N.eye(self.nvar) - self.Lambda.dot(self.beta[i])).T
+                (np.eye(self.nvar) - self.Lambda.dot(self.beta[i])).T
             Deltax += w.dot(self.X[i])
             Weights += w
         # cholesky needed (dimensionality of x)
-        chof = S.linalg.cho_factor(Weights)
-        center = S.linalg.cho_solve(chof, Deltax)
+        chof = scipy.linalg.cho_factor(Weights)
+        center = scipy.linalg.cho_solve(chof, Deltax)
         self.X -= center
-        for i in xrange(self.nobs):
+        for i in range(self.nobs):
             self.Z[i] = self.beta[i].dot(self.X[i])
-            self.Ezz[i] = self.ILPLm1[i] + N.outer(self.Z[i], self.Z[i])
+            self.Ezz[i] = self.ILPLm1[i] + np.outer(self.Z[i], self.Z[i])
 
     ##### Lambda solving #####
 
     def solve_Lambda(self):
         """ if all errors were identical for all supernova (i.e. Psi doesn't
         depend on i)
-        self.Lambda = self.X.T.dot(self.Z).dot( N.linalg.inv(N.sum(self.Ezz,axis=0)))
+        self.Lambda = self.X.T.dot(self.Z).dot( np.linalg.inv(np.sum(self.Ezz,axis=0)))
          For different errors : solve line by line """
-        for j in xrange(self.nvar):
-            toinvert = N.tensordot(self.Psim1[:, j], self.Ezz, axes=([0], [0]))
-            self.Lambda[j] = N.dot(
-                self.Psim1[:, j] * self.X[:, j], self.Z) .dot(N.linalg.inv(toinvert))
+        for j in range(self.nvar):
+            toinvert = np.tensordot(self.Psim1[:, j], self.Ezz, axes=([0], [0]))
+            self.Lambda[j] = np.dot(
+                self.Psim1[:, j] * self.X[:, j], self.Z) .dot(np.linalg.inv(toinvert))
 
     """ solved only on conditional likelihood. Direct method is however
     preferable
@@ -180,9 +181,9 @@ solver.converge(nvec,niter)
         # solves for unaccountded error : mantatory to help the 0-error case to converge.
         # but only for diagonal elements
         diagxxlz = self.X * ((self.X-self.Lambda.dot(self.Z.T).T))
-        for i in xrange(5):
-            f = - N.sum(self.Psim1,axis=0) + N.sum( diagxxlz * self.Psim1**2,axis=0)
-            df = N.sum(self.Psim1**2,axis=0) - 2*N.sum( diagxxlz * self.Psim1**3,axis=0)
+        for i in range(5):
+            f = - np.sum(self.Psim1,axis=0) + np.sum( diagxxlz * self.Psim1**2,axis=0)
+            df = np.sum(self.Psim1**2,axis=0) - 2*np.sum( diagxxlz * self.Psim1**3,axis=0)
             self.Psi0 += -f/df
             self.Psi0[self.Psi0<0]=0.
             print(self.Psi0)
@@ -196,15 +197,15 @@ solver.converge(nvec,niter)
         # self.store_LLPm1()
         f = 0  # half of the log derivative
         df = 0
-        for i in xrange(self.nobs):
+        for i in range(self.nobs):
             LLPm1 = self.get_LLPm1(i)
             LML = self.Lambda.T.dot(LLPm1).dot(self.Lambda)
             LMd = self.Lambda.T.dot(LLPm1).dot(dLambda)
             dMd = dLambda.T.dot(LLPm1).dot(dLambda)
             XML = self.X[i].dot(LLPm1).dot(self.Lambda)
             XMd = self.X[i].dot(LLPm1).dot(dLambda)
-            f += - N.trace(LMd) + XML.dot(XMd.T)
-            df += - N.trace(dMd) + N.trace(LML.dot(dMd) + LMd.dot(LMd)) + XMd.dot(XMd.T) - \
+            f += - np.trace(LMd) + XML.dot(XMd.T)
+            df += - np.trace(dMd) + np.trace(LML.dot(dMd) + LMd.dot(LMd)) + XMd.dot(XMd.T) - \
                 XMd.dot(LML).dot(XMd.T) - 2 * \
                 XML.dot(LMd.T).dot(XMd.T) - XML.dot(dMd).dot(XML.T)
         if f * df < 0:
@@ -219,26 +220,26 @@ solver.converge(nvec,niter)
         i.e. solve for L vector norms of columns L_i """
         self.store_ILPL()
         # self.store_LLPm1()
-        self.LtLLPm1L = N.zeros((self.nobs, self.nvec, self.nvec))
-        self.XtLLPm1L = N.zeros((self.nobs, self.nvec))
-        f = N.zeros(self.nvec)
-        df = N.zeros((self.nvec, self.nvec))
-        for i in xrange(self.nobs):
+        self.LtLLPm1L = np.zeros((self.nobs, self.nvec, self.nvec))
+        self.XtLLPm1L = np.zeros((self.nobs, self.nvec))
+        f = np.zeros(self.nvec)
+        df = np.zeros((self.nvec, self.nvec))
+        for i in range(self.nobs):
             LLPm1 = self.get_LLPm1(i)
             self.LtLLPm1L[i] = self.Lambda.T.dot(LLPm1).dot(self.Lambda)
             self.XtLLPm1L[i] = self.X[i].dot(LLPm1).dot(self.Lambda)
-            f += - N.diag(self.LtLLPm1L[i]) + self.XtLLPm1L[i] ** 2
+            f += - np.diag(self.LtLLPm1L[i]) + self.XtLLPm1L[i] ** 2
             df += self.LtLLPm1L[i] ** 2 - 2 * \
-                N.outer(self.XtLLPm1L[i], self.XtLLPm1L[i]) * self.LtLLPm1L[i]
+                np.outer(self.XtLLPm1L[i], self.XtLLPm1L[i]) * self.LtLLPm1L[i]
         # df symetric, but not pos-def
-        alpha = N.linalg.solve(df, -f)
+        alpha = np.linalg.solve(df, -f)
         prettyalpha = copy.copy(alpha)
 
         # protecting the square root
-        alpha[alpha <= -1] = - N.exp(alpha[alpha <= -1])
+        alpha[alpha <= -1] = - np.exp(alpha[alpha <= -1])
 
         # enforcing move in the "right" direction
-        self.Lambda[:, alpha * f > 0] *= N.sqrt(1 + alpha[alpha * f > 0])
+        self.Lambda[:, alpha * f > 0] *= np.sqrt(1 + alpha[alpha * f > 0])
         prettyalpha[alpha * f <= 0] = 0
         if self.verbose:
             print(prettyalpha)
@@ -248,38 +249,38 @@ solver.converge(nvec,niter)
         """ transform Lambda in an array of orthogonal vectors respecting LLt = Cte
         it uses as an intermediate representation : L = LxI = L' x A where L' is orthonormal
          and then gets the eigenvector representation of AAt """
-        normed = N.zeros(N.shape(self.Lambda))
-        alphas = N.eye(self.nvec)
-        for i in xrange(self.nvec):
+        normed = np.zeros(np.shape(self.Lambda))
+        alphas = np.eye(self.nvec)
+        for i in range(self.nvec):
             sub = self.Lambda[:, i].dot(
-                self.Lambda[:, :i]) / N.sum(self.Lambda[:, :i] ** 2, axis=0)
-            self.Lambda[:, i] -= N.sum(sub * self.Lambda[:, :i], axis=1)
+                self.Lambda[:, :i]) / np.sum(self.Lambda[:, :i] ** 2, axis=0)
+            self.Lambda[:, i] -= np.sum(sub * self.Lambda[:, :i], axis=1)
             alphas[:i, i] = sub
-        norm = N.sqrt(N.sum(self.Lambda ** 2, axis=0))
+        norm = np.sqrt(np.sum(self.Lambda ** 2, axis=0))
         alphas = (alphas.T * norm).T
         self.Lambda /= norm
-        valp, vecp = N.linalg.eig(alphas.dot(alphas.T))
-        self.Lambda = self.Lambda.dot(vecp) * N.sqrt(valp)
+        valp, vecp = np.linalg.eig(alphas.dot(alphas.T))
+        self.Lambda = self.Lambda.dot(vecp) * np.sqrt(valp)
         self.solve_z()
-        return valp, self.Lambda / N.sqrt(valp)
+        return valp, self.Lambda / np.sqrt(valp)
 
     def orthogonalize_LZZL(self):
-        """ returns the PCA eigenvalues and eigenvectors as in N.linalg.inv
+        """ returns the PCA eigenvalues and eigenvectors as in np.linalg.inv
         orthonormalization is performed with LZZ^TL^T, that is, not assuming Var(Z)=I
         This provides fast convergence in the case where noise is vanishingly small """
 
         Lambda = copy.copy(self.Lambda)
         Z = copy.copy(self.Z)
-        for i in xrange(self.nvec):
-            for j in xrange(i):
-                scal = N.dot(Lambda[:, i], Lambda[:, j])
+        for i in range(self.nvec):
+            for j in range(i):
+                scal = np.dot(Lambda[:, i], Lambda[:, j])
                 Z[:, j] += scal * Z[:, i]
                 Lambda[:, i] -= scal * Lambda[:, j]
-            norm = N.sqrt(N.sum(Lambda[:, i] ** 2))
+            norm = np.sqrt(np.sum(Lambda[:, i] ** 2))
             Lambda[:, i] /= norm
             Z[:, i] *= norm
         # return Z,Lambda
-        eigvals, eigvecs = N.linalg.eig(Z.T.dot(Z) / self.nobs)
+        eigvals, eigvecs = np.linalg.eig(Z.T.dot(Z) / self.nobs)
         return eigvals, Lambda.dot(eigvecs)
 
     ##### Psi solving #####
@@ -296,13 +297,13 @@ solver.converge(nvec,niter)
         f = 0
         df = 0
         # solving only for the diagonal part
-        for i in xrange(self.nobs):
+        for i in range(self.nobs):
             LLPm1 = self.get_LLPm1(i)
-            LLPm1X = N.dot(LLPm1, self.X[i])
-            f += N.diag(-LLPm1) + LLPm1X ** 2
-            df += LLPm1 ** 2 - 2 * N.outer(LLPm1X, LLPm1X) * LLPm1
+            LLPm1X = np.dot(LLPm1, self.X[i])
+            f += np.diag(-LLPm1) + LLPm1X ** 2
+            df += LLPm1 ** 2 - 2 * np.outer(LLPm1X, LLPm1X) * LLPm1
 
-        deltaPsi0 = - N.linalg.solve(df, f)
+        deltaPsi0 = - np.linalg.solve(df, f)
         self.Psi0[deltaPsi0 * f > 0] += deltaPsi0[deltaPsi0 * f > 0]
         self.Psi0[self.Psi0 < 0] = 0.
         if self.verbose:
@@ -314,61 +315,61 @@ solver.converge(nvec,niter)
     def chi2(self):
         """ expected chi2 which is minimized by the M-step
         Warning: this chi2 is NOT the term that is minimized by the overall procedure """
-        self.chi2_i = N.zeros(self.nobs)
-        for i in xrange(self.nobs):
+        self.chi2_i = np.zeros(self.nobs)
+        for i in range(self.nobs):
             self.chi2_i = (self.X[i].T * self.Psim1[i]).dot(self.X[i])
             self.chi2_i[
                 i] += -2 * (self.X[i].T * self.Psim1[i]).dot(self.Lambda.dot(self.Z[i]))
-            self.chi2_i[i] += N.trace(self.ILPL[i].dot(self.Ezz[i]))
-        return N.sum(self.chi2_i)
+            self.chi2_i[i] += np.trace(self.ILPL[i].dot(self.Ezz[i]))
+        return np.sum(self.chi2_i)
 
     def log_likelihood(self, z_solved=False):
         """ Computes the log-likelihood which is minimized : x = Normal ( 0, LLt + Psi )
         if Z is already solved for, the computation is faster
         returns the Log-L and the associated chi2"""
 
-        self.det_i = N.zeros(self.nobs)
-        self.chi2_i = N.zeros(self.nobs)
+        self.det_i = np.zeros(self.nobs)
+        self.chi2_i = np.zeros(self.nobs)
         if z_solved:
-            for i in xrange(self.nobs):
+            for i in range(self.nobs):
                 # first term : log determinant of psi
                 # protect against missing data (Psim1==0)
-                #self.det_i[i] = N.sum(N.log(self.Psim1[i])) /2.
-                self.det_i[i] = N.sum(N.log(
+                #self.det_i[i] = np.sum(np.log(self.Psim1[i])) /2.
+                self.det_i[i] = np.sum(np.log(
                     self.Psim1[i][self.Psim1[i] > 0])) / 2.
-                self.det_i[i] -= N.log(N.linalg.det(self.ILPL[i])) / 2.
+                self.det_i[i] -= np.log(np.linalg.det(self.ILPL[i])) / 2.
                 # observing that x^T (LLt+Psi)-1 x = x^T Psi-1 ( x - Lz )
                 # this assumes z is "solved" (or converged) for L
                 self.chi2_i[i] -= (self.X[i] * self.Psim1[i]).dot(
                     self.X[i] - self.Lambda.dot(self.Z[i])) / 2
         else:
             self.store_ILPL()
-            for i in xrange(self.nobs):
+            for i in range(self.nobs):
                 # first term : log determinant of psi
-                self.det_i[i] = N.sum(N.log(self.Psim1[i])) / 2.
-                self.det_i[i] -= N.log(N.linalg.det(self.ILPL[i])) / 2.
+                self.det_i[i] = np.sum(np.log(self.Psim1[i])) / 2.
+                self.det_i[i] -= np.log(np.linalg.det(self.ILPL[i])) / 2.
                 # general case (slower):
                 # matrix inversion lemma on (LLt + Psi)-1 ...
                 # there is a '-' sign for the second term
                 # self.store_ILPL()
-                self.chi2_i[i] -= N.sum(self.X[i] ** 2 * self.Psim1[i]) / 2.
+                self.chi2_i[i] -= np.sum(self.X[i] ** 2 * self.Psim1[i]) / 2.
                 projX = (self.Lambda.T * self.Psim1[i]).dot(self.X[i])
                 self.chi2_i[i] += projX.dot(self.ILPLm1[i].dot(projX)) / 2.
 
                 # direct (slow) computation
-                #mat = N.diag(1./self.Psim1[i]) + self.Lambda.dot(self.Lambda.T)
-                #self.det_i[i] -= N.log(N.linalg.det( mat )) /2.
-                #self.det_i[i] -= self.X[i] .dot( N.linalg.inv(mat) ).dot(self.X[i]) /2.
-        return N.sum(self.det_i + self.chi2_i), -2 * N.sum(self.chi2_i)
+                #mat = np.diag(1./self.Psim1[i]) + self.Lambda.dot(self.Lambda.T)
+                #self.det_i[i] -= np.log(np.linalg.det( mat )) /2.
+                #self.det_i[i] -= self.X[i] .dot( np.linalg.inv(mat) ).dot(self.X[i]) /2.
+        return np.sum(self.det_i + self.chi2_i), -2 * np.sum(self.chi2_i)
 
     def grad_log_likelihood(self):
         """ computes the gradient of log_likelihood """
         self.solve_z()
         # self.store_LLPm1()
-        gradient = - N.sum(self.beta, axis=0).T
-        for i in xrange(self.nobs):
+        gradient = - np.sum(self.beta, axis=0).T
+        for i in range(self.nobs):
             LLPm1 = self.get_LLPm1(i)
-            gradient += N.outer(LLPm1.dot(self.X[i]), self.Z[i])
+            gradient += np.outer(LLPm1.dot(self.X[i]), self.Z[i])
         return gradient
 
     ##### Main Loop #####
@@ -395,7 +396,7 @@ solver.converge(nvec,niter)
         self.verbose = verbose
 
         if solve_Psi0:
-            self.Psi0 = N.zeros(self.nvar)
+            self.Psi0 = np.zeros(self.nvar)
 
         self.init_lambda(nvec, Lambda_init)
 
@@ -403,9 +404,9 @@ solver.converge(nvec,niter)
             self.solve_Psi0()
 
         Lambda_0 = None
-        old_log_L = -N.inf
+        old_log_L = -np.inf
 
-        for i in xrange(niter + 1):
+        for i in range(niter + 1):
 
             # E-step
             if center:

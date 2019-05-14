@@ -3,7 +3,6 @@
 import numpy as np
 import pylab as plt
 from matplotlib.axes import Axes
-import pickle
 import copy
 import os
 import sugar_training as sugar
@@ -94,7 +93,7 @@ class emfa_plot:
     """
     def __init__(self, path_input = 'data_input/', path_output = 'data_output/'):
 
-        dic_emfa = pickle.load(open(path_output+'emfa_output.pkl'))
+        dic_emfa = sugar.load_pickle(os.path.join(path_output,'emfa_output.pkl'))
         self.val = dic_emfa['val']
         self.vec = dic_emfa['vec']
         self.si_norm = dic_emfa['Norm_data'][dic_emfa['filter']]

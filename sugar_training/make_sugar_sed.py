@@ -4,7 +4,6 @@ from scipy.sparse import block_diag
 from scipy.sparse import coo_matrix
 import numpy as np
 import sugar_training as sugar
-import pickle
 import copy
 import os
 
@@ -17,7 +16,7 @@ class load_data_to_build_sugar:
         self.ncomp = ncomp
         self.fit_Av = fit_Av
 
-        dicpca = pickle.load(open(os.path.join(self.path_output,'emfa_output.pkl')))
+        dicpca = sugar.load_pickle(os.path.join(self.path_output,'emfa_output.pkl'))
         pca_sn_name = np.array(dicpca['sn_name'])
 
         if filtre:
@@ -40,7 +39,7 @@ class load_data_to_build_sugar:
             self.Rv = Rv
 
         else:
-            dic_model=pickle.load(open(os.path.join(self.path_output,'model_at_max.pkl')))
+            dic_model = sugar.load_pickle(os.path.join(self.path_output,'model_at_max.pkl'))
             self.sn_name_Av = dic_model['sn_name']
             self.Av = dic_model['Av_cardelli']
             self.Rv = dic_model['RV']
@@ -165,10 +164,7 @@ class make_sugar(load_data_to_build_sugar):
                'chi2':self.sedfit.chi2_save,
                'dof':self.sedfit.dof}
         
-        fichier = open(pkl,'w')
-        pickle.dump(dic, fichier)
-        fichier.close()
-
+        st.write_pickle(dic, pkl)
 
 if __name__ == '__main__':
 

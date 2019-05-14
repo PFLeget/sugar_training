@@ -3,7 +3,6 @@
 import numpy as np
 from . import emfa
 import sugar_training as sugar
-import pickle
 import os
 
 def sort_eigen(eigenval,eigenvec):
@@ -178,11 +177,24 @@ class emfa_si_analysis:
         if bic:
             self._bic_number_eigenvector()
             
-        dico=self.__dict__
-        File=open(pkl_file,'w')
-        pickle.dump(dico,File)
-        File.close()
+        dico = {'Norm_data':self.Norm_data,
+                'filter':self.filter,
+                'val':self.val,
+                'error_center':self.error_center,
+                'sn_name':self.sn_name,
+                'Norm_err':self.Norm_err,
+                'data_center':self.data_center,
+                'Covar':self.Covar,
+                'chi2_empca':self.chi2_empca,
+                'EM_FA_Cov':self.EM_FA_Cov,
+                'error':self.error,
+                'number_si':self.number_si,
+                'data':self.data,
+                'norm':self.norm,
+                'vec':self.vec}
+        self.dico = dico
 
+        sugar.write_pickle(dico, pkl_file)
 
     def emfa(self,emfa_output_pkl, sigma_clipping=False,
              chi2emfa=True, bic=False):
@@ -190,7 +202,7 @@ class emfa_si_analysis:
         self._center()
         if sigma_clipping:
             self._iterative_filter(chi2emfa=True)
-        self._em_fa(emfa_output_pkl,bic=bic)
+        self._em_fa(emfa_output_pkl, bic=bic)
 
 def run_emfa_analysis(path_input, path_output, sigma_clipping=False):
 
@@ -201,7 +213,6 @@ def run_emfa_analysis(path_input, path_output, sigma_clipping=False):
     si_analysis = emfa_si_analysis(snia.spectral_indicators,
                                    snia.spectral_indicators_error,
                                    snia.sn_name,missing_data=True)
-
         
     output_file = os.path.join(path_output,'emfa_output.pkl')
 

@@ -1,4 +1,3 @@
-import pickle
 import os
 import numpy as np
 import sugar_training as st
@@ -6,7 +5,7 @@ import sugar_training as st
 def write_sugar(path_output = 'data_output/', model = 'sugar_model_2.58_Rv.pkl'):
 
     sed = os.path.join(path_output, model)
-    dic = pickle.load(open(sed))
+    dic = st.load_pickle(sed)
     Rv = dic['Rv']
 
     fichier = open(os.path.join(path_output, 'SUGAR_model_v1.asci'),'w') 

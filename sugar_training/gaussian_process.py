@@ -2,7 +2,6 @@
 
 import numpy as np
 import sugar_training as st
-import pickle
 import os
 
 class load_data_bin_gp:
@@ -229,13 +228,9 @@ class gp_sed:
         """
         output_directory = path_output
 
-        fichier = open(output_directory+'sed_snia_gaussian_process.pkl','w')
-        pickle.dump(self.dic, fichier)
-        fichier.close()
+        st.write_pickle(self.dic, os.path.join(output_directory, 'sed_snia_gaussian_process.pkl'))
 
-        mean_file = open(output_directory+'mean_sed_snia_from_gaussian_process.pkl','w')
-        pickle.dump(self.new_mean_gp, mean_file)
-        mean_file.close()
+        st.write_pickle(self.new_mean_gp, os.path.join(output_directory,'mean_sed_snia_from_gaussian_process.pkl'))
 
         gp_files = open(output_directory+'gp_info.dat','w')
         gp_files.write('#wavelength kernel_amplitude correlation_length pull_average pull_std pull_number_of_points \n')

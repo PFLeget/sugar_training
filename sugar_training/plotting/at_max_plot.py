@@ -2,7 +2,6 @@
 
 import pylab as plt
 import numpy as np
-import pickle
 import copy
 import matplotlib.gridspec as gridspec
 import sugar_training as st
@@ -65,7 +64,7 @@ class at_max_plot:
 
         # Load the hubble fit data
 
-        dico = pickle.load(open(os.path.join(path_output, 'model_at_max.pkl')))
+        dico = st.load_pickle(open(os.path.join(path_output, 'model_at_max.pkl')))
         self.Y_err = dico['Mag_all_sn_err']
         self.Mag_no_corrected = dico['Mag_no_corrected']
         self.alpha = dico['alpha']

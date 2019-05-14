@@ -2,7 +2,6 @@
 
 import numpy as np
 import sugar_training as st
-import pickle
 import scipy.interpolate as inter
 import os
 
@@ -12,7 +11,7 @@ class aligne_SED:
     """
     def __init__(self, path_input, sn, ALPHA, M0, X, Rv):
 
-        self.dic = pickle.load(open(os.path.join(path_input, 'sugar_data_release.pkl')))
+        self.dic = st.load_pickle(os.path.join(path_input, 'sugar_data_release.pkl'))
         Phase = []
         self.IND = []
         for j in range(len(self.dic[sn]['spectra'].keys())):
@@ -106,7 +105,7 @@ class global_fit:
 
 def comp_sugar_param(path_input= 'data_input/', path_output = 'data_output/', model = 'sugar_model_2.60_Rv.pkl'):
 
-    dic_sed = pickle.load(open(os.path.join(path_output, model)))
+    dic_sed = st.load_pickle(os.path.join(path_output, model))
     ld = st.load_data_sugar(path_input=path_input, training=True, validation=True)
     HH = []
     dic = {}
@@ -129,10 +128,7 @@ def comp_sugar_param(path_input= 'data_input/', path_output = 'data_output/', mo
         for comp in range(len(h)-2):
             dic[SNN].update({'q%i'%(comp+1):h[2+comp]})
 
-
-    File=open(os.path.join(path_output, 'sugar_parameters.pkl'),'w')
-    pickle.dump(dic,File)
-    File.close()
+    st.write_pickle(dico, os.path.join(path_output, 'sugar_parameters.pkl'))
 
 if __name__=="__main__":
 

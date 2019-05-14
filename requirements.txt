@@ -1,3 +1,5 @@
+setuptools
+future
 matplotlib
 scipy
 numpy

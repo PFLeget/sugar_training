@@ -3,6 +3,10 @@
 """
 Some description.
 """
+
+from .load_and_write import load_pickle
+from .load_and_write import write_pickle
+
 from .load_data import load_data_sugar
 
 from . import sugargp

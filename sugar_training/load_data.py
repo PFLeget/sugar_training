@@ -1,9 +1,8 @@
 """script that load the data used to train sugar. """
 
+import sugar_training as st
 import numpy as np
-import pickle
 import os
-import sys
 
 class load_data_sugar(object):
     """function that allowed to access to observed sed and spectral features."""
@@ -20,10 +19,7 @@ class load_data_sugar(object):
         """
         self.file_spectra = os.path.join(path_input, 'sugar_data_release.pkl')
 
-        if sys.version_info[0] < 3:
-            self.dic = pickle.load(open(self.file_spectra))
-        else:
-            self.dic = pickle.load(open(self.file_spectra, 'rb'), encoding='latin1')
+        self.dic = st.load_pickle(self.file_spectra)
 
         self.sn_name = list(self.dic.keys())
         Filter = np.array([True] * len(self.sn_name))
