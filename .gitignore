@@ -4,14 +4,21 @@ __pycache__/
 *$py.class
 
 .gitignore~
+requirements.txt~
 sugar_training/*py~
 sugar_training/*pyc
 
+.DS_Store
+
+sugar_training/.DS_Store
+
 sugar_training/plotting/*py~
 sugar_training/plotting/*pyc
+sugar_training/plotting/.DS_Store
 
 sugar_training/sugargp/*py~
 sugar_training/sugargp/*pyc
+sugar_training/sugargp/.DS_Store
 
 # C extensions
 *.so
