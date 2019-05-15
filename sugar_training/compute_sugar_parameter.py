@@ -31,7 +31,7 @@ class aligne_SED:
         for i in range(len(wavelength)):
             if wavelength[i]==wavelength[0]:
                 self.number_bin_phase += 1
-        self.number_bin_wavelength = len(wavelength)/self.number_bin_phase
+        self.number_bin_wavelength = int(len(wavelength)/self.number_bin_phase)
                                                                         
         
     def align_SED(self):
@@ -128,7 +128,7 @@ def comp_sugar_param(path_input= 'data_input/', path_output = 'data_output/', mo
         for comp in range(len(h)-2):
             dic[SNN].update({'q%i'%(comp+1):h[2+comp]})
 
-    st.write_pickle(dico, os.path.join(path_output, 'sugar_parameters.pkl'))
+    st.write_pickle(dic, os.path.join(path_output, 'sugar_parameters.pkl'))
 
 if __name__=="__main__":
 
