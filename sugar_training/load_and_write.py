@@ -11,9 +11,9 @@ def load_pickle(pickle_file):
 
 def write_pickle(dico, pickle_file):
     if sys.version_info[0] < 3:
-        File = open(pickle_file)
+        File = open(pickle_file, 'w')
     else:
-        File = open(pickle_file,'wb')
+        File = open(pickle_file, 'wb')
     pickle.dump(dico,File)
     File.close()
     return dico
