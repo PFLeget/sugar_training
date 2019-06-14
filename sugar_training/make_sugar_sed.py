@@ -11,6 +11,7 @@ class load_data_to_build_sugar:
 
     def __init__(self, path_output='data_output/', path_output_gp='data_output/gaussian_process/', ncomp=3, filtre=True, fit_Av= False, Rv=None):
 
+
         self.path_output = path_output
         self.path_output_gp = path_output_gp
         self.ncomp = ncomp
@@ -19,6 +20,8 @@ class load_data_to_build_sugar:
         dicpca = sugar.load_pickle(os.path.join(self.path_output,'emfa_output.pkl'))
         pca_sn_name = np.array(dicpca['sn_name'])
 
+        # TO DO: n'oublie pas que tu dois faire en sorte que les nom des SNIa soit bien en accord
+        # met des False ou il faut dans Filtre et ca devrait pas poser de probleme 
         if filtre:
             FILTRE = dicpca['filter']
         else:
@@ -61,6 +64,9 @@ class load_data_to_build_sugar:
         self.number_bin_wavelength = int(len(wavelength) / self.number_bin_phase)
 
     def compute_EM_PCA_data(self):
+
+        # Ce que tu as fais dans test_PCA_p,
+        # fais les manipulations ici 
 
         dat = self.pca_Norm_data
         err = self.pca_Norm_err
