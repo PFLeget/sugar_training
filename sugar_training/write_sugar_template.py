@@ -13,13 +13,14 @@ def write_sugar(path_output = 'data_output/', model = 'sugar_model_2.58_Rv.pkl')
     Time = np.linspace(-12,48,21)
 
     for Bin in range(len(dic['m0'])):
-        fichier.write('%.5f    %.5f    %.5f    %.5f    %.5f    %.5f    %.5f    %.5f \n'%((Time[Bin%21],
-                                                                                          dic['X'][Bin],
-                                                                                          dic['m0'][Bin],
-                                                                                          dic['alpha'][Bin,0],
-                                                                                          dic['alpha'][Bin,1],
-                                                                                          dic['alpha'][Bin,2],
-                                                                                          st.extinctionLaw(dic['X'][Bin],Rv=Rv),1)))
+        fichier.write('%.5f    %.5f    %.5f    %.5f    %.5f    %.5f    %.5f    %.5f    %.5f \n'%((Time[Bin%21],
+                                                                                                  dic['X'][Bin],
+                                                                                                  dic['m0'][Bin],
+                                                                                                  dic['alpha'][Bin,0],
+                                                                                                  dic['alpha'][Bin,1],
+                                                                                                  dic['alpha'][Bin,2],
+                                                                                                  dic['alpha'][Bin,3],
+                                                                                                  st.extinctionLaw(dic['X'][Bin],Rv=Rv),1)))
 
 
     fichier.close()
@@ -37,7 +38,7 @@ def write_sugar(path_output = 'data_output/', model = 'sugar_model_2.58_Rv.pkl')
 
     s = sorted(listik, key=itemgetter(0))
 
-    names = ['0','1','2','3','4']
+    names = ['0','1','2','3','4','5']
     for i in names:
         outfile = open(os.path.join(path_output, 'sugar_template_' + i + '.dat'), 'w')
         for line in s:
@@ -48,3 +49,8 @@ def write_sugar(path_output = 'data_output/', model = 'sugar_model_2.58_Rv.pkl')
 
     os.system('mkdir ' + os.path.join(path_output,'sugar_template_v1'))
     os.system('mv ' + os.path.join(path_output, 'sugar_template_* ') +  os.path.join(path_output,'sugar_template_v1'))
+
+if __name__ == '__main__':
+
+    write_sugar(path_output = '../../Desktop/post_doc/juin_2019/data_output_plus_plus/', model = 'sugar_model_2.58_Rv.pkl')
+    
