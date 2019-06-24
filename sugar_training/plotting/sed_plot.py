@@ -735,6 +735,7 @@ class residual_plot:
         RESIDUAL_SUGAR = []
         RESIDUAL_SUGAR_1 = []
         RESIDUAL_SUGAR_2 = []
+        RESIDUAL_SUGAR_3 = []
         RESIDUAL_SALT2 = []
         ERROR_SPECTRA = []
 
@@ -809,30 +810,38 @@ class residual_plot:
         Reconstruction=N.zeros((len(Phase),NBIN))
         rec1 = N.zeros((len(Phase),NBIN))
         rec2 = N.zeros((len(Phase),NBIN))
+        rec3 = N.zeros((len(Phase),NBIN))
         for Bin in range(NBIN):
             SPLINE_Mean=inter.InterpolatedUnivariateSpline(Time,self.M0[Bin*NPHASE:(Bin+1)*NPHASE])
             Reconstruction[:,Bin]+=SPLINE_Mean(Phase)
             rec1[:,Bin]+=SPLINE_Mean(Phase)
             rec2[:,Bin]+=SPLINE_Mean(Phase)
+            rec3[:,Bin]+=SPLINE_Mean(Phase)
             for i in range(len(self.alpha[0])):
                 SPLINE=inter.InterpolatedUnivariateSpline(Time,self.alpha[:,i][Bin*NPHASE:(Bin+1)*NPHASE])
                 Reconstruction[:,Bin]+=self.dicS[sn]['q%i'%(i+1)]*SPLINE(Phase)
                 if i==0:
                     rec1[:,Bin]+=self.dicS[sn]['q%i'%(i+1)]*SPLINE(Phase)
                     rec2[:,Bin]+=self.dicS[sn]['q%i'%(i+1)]*SPLINE(Phase)
+                    rec3[:,Bin]+=self.dicS[sn]['q%i'%(i+1)]*SPLINE(Phase)
                 if i==1:
                     rec2[:,Bin]+=self.dicS[sn]['q%i'%(i+1)]*SPLINE(Phase)
-                    
+                    rec3[:,Bin]+=self.dicS[sn]['q%i'%(i+1)]*SPLINE(Phase)
+                if i==2:
+                    rec3[:,Bin]+=self.dicS[sn]['q%i'%(i+1)]*SPLINE(Phase)
 
             Reconstruction[:,Bin]+=self.dicS[sn]['grey'] - 19.2
             rec1[:,Bin] += self.dicS[sn]['grey'] - 19.2
             rec2[:,Bin] += self.dicS[sn]['grey'] - 19.2
+            rec3[:,Bin] += self.dicS[sn]['grey'] - 19.2
             
             Reconstruction[:,Bin]+=self.dicS[sn]['Av']*sugar.extinctionLaw(self.dic[sn]['0']['X'][Bin],
                                                                            Rv=self.Rv)
             rec1[:,Bin] += self.dicS[sn]['Av']*sugar.extinctionLaw(self.dic[sn]['0']['X'][Bin],
                                                                    Rv=self.Rv)
             rec2[:,Bin] += self.dicS[sn]['Av']*sugar.extinctionLaw(self.dic[sn]['0']['X'][Bin],
+                                                            Rv=self.Rv)
+            rec3[:,Bin] += self.dicS[sn]['Av']*sugar.extinctionLaw(self.dic[sn]['0']['X'][Bin],
                                                             Rv=self.Rv)
         MIN=10**25
         MAX=-10**25
@@ -848,6 +857,7 @@ class residual_plot:
             RESIDUAL_SUGAR.append(Reconstruction[j]-self.dic[sn]['%i'%(JJ[j])]['Y'])
             RESIDUAL_SUGAR_1.append(rec1[j]-self.dic[sn]['%i'%(JJ[j])]['Y'])
             RESIDUAL_SUGAR_2.append(rec2[j]-self.dic[sn]['%i'%(JJ[j])]['Y'])
+            RESIDUAL_SUGAR_3.append(rec3[j]-self.dic[sn]['%i'%(JJ[j])]['Y'])
                             
         
         MIN=N.min(OFFSET[0])
@@ -868,8 +878,7 @@ class residual_plot:
         ax2.yaxis.set_ticklabels(Y2_label)
         ax2.set_ylim(ax2.get_ylim()[::-1])
 
-        return RESIDUAL_SUGAR, RESIDUAL_SUGAR_1, RESIDUAL_SUGAR_2, RESIDUAL_SALT2, ERROR_SPECTRA, Phase
-
+        return RESIDUAL_SUGAR, RESIDUAL_SUGAR_1, RESIDUAL_SUGAR_2, RESIDUAL_SUGAR_3, RESIDUAL_SALT2, ERROR_SPECTRA, Phase
 
 
 def wRMS_sed_sugar_salt(rp, training=True, validation=False, sn_list=[]):
@@ -886,6 +895,7 @@ def wRMS_sed_sugar_salt(rp, training=True, validation=False, sn_list=[]):
     residual_sucre = []
     residual_sucre_1 = []
     residual_sucre_2 = []    
+    residual_sucre_3 = []
     residual_error = []
     nspectra = 0
 
@@ -909,11 +919,12 @@ def wRMS_sed_sugar_salt(rp, training=True, validation=False, sn_list=[]):
         
     i=0
     for sn in SN:
-        sucre, sucre_1, sucre_2, sel, res_error, phase = rp.plot_spectra_reconstruct_residuals(sn,T_min=-12,T_max=48)
+        sucre, sucre_1, sucre_2, sucre_3, sel, res_error, phase = rp.plot_spectra_reconstruct_residuals(sn,T_min=-12,T_max=48)
         residual_sel.append(sel)
         residual_sucre.append(sucre)
         residual_sucre_1.append(sucre_1)
         residual_sucre_2.append(sucre_2)
+        residual_sucre_3.append(sucre_3)
         residual_error.append(res_error)
         nspectra += len(N.array(residual_sucre[i])[:,0])
         i+=1
@@ -923,6 +934,7 @@ def wRMS_sed_sugar_salt(rp, training=True, validation=False, sn_list=[]):
     res_sucre = N.zeros((nspectra,NBIN))
     res_sucre_1 = N.zeros((nspectra,NBIN))
     res_sucre_2 = N.zeros((nspectra,NBIN))
+    res_sucre_3 = N.zeros((nspectra,NBIN))
     res_err = N.zeros((nspectra,NBIN))
     t = 0
     for i in range(len(SN)):
@@ -930,6 +942,7 @@ def wRMS_sed_sugar_salt(rp, training=True, validation=False, sn_list=[]):
             res_sucre[t] = residual_sucre[i][j]
             res_sucre_1[t] = residual_sucre_1[i][j]
             res_sucre_2[t] = residual_sucre_2[i][j]
+            res_sucre_3[t] = residual_sucre_3[i][j]
             res_sel[t] = residual_sel[i][j]
             res_err[t] = residual_error[i][j]
             t+=1
@@ -941,6 +954,7 @@ def wRMS_sed_sugar_salt(rp, training=True, validation=False, sn_list=[]):
     wrms_sucre = N.zeros(len(wave))
     wrms_sucre_1 = N.zeros(len(wave))
     wrms_sucre_2 = N.zeros(len(wave))
+    wrms_sucre_3 = N.zeros(len(wave))
     
     for Bin in range(len(wave)):
         
@@ -956,6 +970,9 @@ def wRMS_sed_sugar_salt(rp, training=True, validation=False, sn_list=[]):
         residual_clipped, error_clipped = sigma_clip(res_sucre_2[:, Bin], res_err[:, Bin])
         wrms_sucre_2[Bin] = N.sqrt(N.sum((residual_clipped**2)/(error_clipped**2)) / N.sum(1./(error_clipped**2)))
 
+        residual_clipped, error_clipped = sigma_clip(res_sucre_3[:, Bin], res_err[:, Bin])
+        wrms_sucre_3[Bin] = N.sqrt(N.sum((residual_clipped**2)/(error_clipped**2)) / N.sum(1./(error_clipped**2)))
+
     err_rms = N.zeros_like(wave)
     for i in range(len(wave)):
         loc = sugar.biweight_M(res_err[i])
@@ -966,9 +983,10 @@ def wRMS_sed_sugar_salt(rp, training=True, validation=False, sn_list=[]):
     P.figure(figsize=(16,6))#, frameon=False)
     P.subplots_adjust(top=0.9,right=0.65,left=0.07,bottom=0.15)
     P.plot(wave,wrms_sel,'r',linewidth=5,label='SALT2.4 ($X_0$ + $X_1$ + $C$)')
-    P.plot(wave,wrms_sucre_1,'b-.',linewidth=3,label='SUGAR ($\Delta M_{grey}$ + $q_1$ + $A_V$)')
-    P.plot(wave,wrms_sucre_2,'b--',linewidth=3,label='SUGAR ($\Delta M_{grey}$ +$q_1$ + $q_2$ + $A_V$)')
-    P.plot(wave,wrms_sucre,'b',linewidth=5,label='SUGAR ($\Delta M_{grey}$ +$q_1$ + $q_2$ + $q_3$ + $A_V$)')
+    P.plot(wave,wrms_sucre_1,'b-.',linewidth=3,label='SUGAR++ ($\Delta M_{grey}$ + $q_1\'$ + $A_V$)')
+    P.plot(wave,wrms_sucre_2,'b--',linewidth=3,label='SUGAR++ ($\Delta M_{grey}$ +$q_1\'$ + $q_2\'$ + $A_V$)')
+    P.plot(wave,wrms_sucre_3,'b-.',linewidth=3,label='SUGAR++ ($\Delta M_{grey}$ +$q_1\'$ + $q_2\'$ + $q_3\'$ + $A_V$)')
+    P.plot(wave,wrms_sucre,'b',linewidth=5,label='SUGAR++ ($\Delta M_{grey}$ +$q_1\'$ + $q_2\'$ + $q_3\'$ + $q_4\'$ + $A_V$)')
     #P.plot(wave,N.ones_like(wave)*N.mean(err_rms),'k--',linewidth=1,label='average spectral noise')
     P.xlabel('wavelength $[\AA]$',fontsize=20)
     P.ylabel('wRMS (mag)',fontsize=20)
