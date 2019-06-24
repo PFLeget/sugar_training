@@ -83,6 +83,21 @@ class load_data_sugar(object):
                     self.spectra_wavelength[self.sn_name[i]].update({'%i'%t: self.dic[self.sn_name[i]]['spectra'][t]['X']})
                     self.spectra_phases[self.sn_name[i]].update({'%i'%t: self.dic[self.sn_name[i]]['spectra'][t]['salt2_phase']})
 
+
+    def load_spectra_max(self):
+
+        self.dic_max = {}
+        for sn in self.sn_name:
+            T = 0
+            MAX = 999
+            for t in self.dic[sn]['spectra']:
+                if abs(self.dic[sn]['spectra'][t]['salt2_phase']) < MAX:
+                    MAX = abs(self.dic[sn]['spectra'][t]['salt2_phase'])
+                    T = t
+            if MAX < 2.5:
+                self.dic_max.update({sn: self.dic[sn]['spectra'][T]})
+                self.dic_max[sn].update({'dmz':self.dic[sn]['salt2_info']['dmz']})
+
     def load_spectral_indicator_at_max(self, missing_data=True):
         """
         Load spectral indicators at max of snia.

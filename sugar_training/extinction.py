@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 def CCMextinctionParameters(lbda):
     """Extinction law parameters a(lbda),b(lbda), to be used in
     A(lambda)/A(V) = a(lbda) + b(lbda)/Rv for lbda [A] in the 1000

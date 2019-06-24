@@ -61,7 +61,7 @@ def cholesky_inverse(matrix,return_logdet=False):
         return inv_matrix
 
 
-def passage(norm_data1,norm_error1,vecteur_propre,sub_space=None):
+def passage(norm_data1, norm_error1, vecteur_propre, sub_space=None):
     """
     project in emfa space.
     """
@@ -82,6 +82,30 @@ def passage(norm_data1,norm_error1,vecteur_propre,sub_space=None):
             Y[:,sn]=np.dot(np.dot(np.linalg.inv(np.dot(vec_propre_sub_space.T,np.dot(np.eye(len(norm_data))*(1./norm_error[:,sn]**2),vec_propre_sub_space))),np.dot(vec_propre_sub_space.T,np.eye(len(norm_data))*(1./norm_error[:,sn]**2))),norm_data[:,sn])
 
     return Y.T
+
+def passage_plus_plus(data, cov, eig_vec, sub_space=None):
+    """
+    project in emfa space.
+    """
+    if sub_space is not None:
+        vec = np.zeros((len(norm_data),sub_space))
+        for vector in range(sub_space):
+            vec[:,vector] = eig_vec[:,vector]
+    else:
+        vec = eig_vec
+        sub_space = len(vec[0]) 
+
+    projection = np.zeros((len(data[:,0]), sub_space))
+    projection_cov = np.zeros((len(data[:,0]), sub_space, sub_space))
+
+    for sn in range(len(data[:,0])):
+        w = np.linalg.inv(cov[sn])
+        A = np.linalg.inv(np.dot(vec.T, w.dot(vec)))
+
+        projection[sn] = np.dot(A, np.dot(vec.T, w.dot(norm_data[:,sn])))
+        projection_cov[sn] = A
+
+    return projection, projection_cov
 
 
 
