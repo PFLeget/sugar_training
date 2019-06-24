@@ -26,6 +26,9 @@ from .math_toolbox import correlation_weighted
 from .math_toolbox import correlation_significance
 from .math_toolbox import neff_weighted
 from .math_toolbox import passage_plus_plus
+from .math_toolbox import flbda2ABmag
+from .cosmology import luminosity_distance
+
 
 from .extinction import extinctionLaw
 from .emfa_analysis import run_emfa_analysis

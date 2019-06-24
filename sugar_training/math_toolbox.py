@@ -61,7 +61,7 @@ def cholesky_inverse(matrix,return_logdet=False):
         return inv_matrix
 
 
-def passage(norm_data1,norm_error1,vecteur_propre,sub_space=None):
+def passage(norm_data1, norm_error1, vecteur_propre, sub_space=None):
     """
     project in emfa space.
     """
@@ -82,6 +82,30 @@ def passage(norm_data1,norm_error1,vecteur_propre,sub_space=None):
             Y[:,sn]=np.dot(np.dot(np.linalg.inv(np.dot(vec_propre_sub_space.T,np.dot(np.eye(len(norm_data))*(1./norm_error[:,sn]**2),vec_propre_sub_space))),np.dot(vec_propre_sub_space.T,np.eye(len(norm_data))*(1./norm_error[:,sn]**2))),norm_data[:,sn])
 
     return Y.T
+
+def passage_plus_plus(data, cov, eig_vec, sub_space=None):
+    """
+    project in emfa space.
+    """
+    if sub_space is not None:
+        vec = np.zeros((len(norm_data),sub_space))
+        for vector in range(sub_space):
+            vec[:,vector] = eig_vec[:,vector]
+    else:
+        vec = eig_vec
+        sub_space = len(vec[0]) 
+
+    projection = np.zeros((len(data[:,0]), sub_space))
+    projection_cov = np.zeros((len(data[:,0]), sub_space, sub_space))
+
+    for sn in range(len(data[:,0])):
+        w = np.linalg.inv(cov[sn])
+        A = np.linalg.inv(np.dot(vec.T, w.dot(vec)))
+
+        projection[sn] = np.dot(A, np.dot(vec.T, w.dot(norm_data[:,sn])))
+        projection_cov[sn] = A
+
+    return projection, projection_cov
 
 
 
@@ -407,3 +431,27 @@ def correlation_weighted(x, y, w=None, axis=None,
     else:
         return rho,drm,drp                             # Assymmetric errors
 
+
+def flbda2fnu(x, y, var=None, backward=False):
+    """Convert *x* [A], *y* [erg/s/cm2/A] to *y* [erg/s/cm2/Hz]. 
+    Set `var=var(y)` to get variance. Function from SNFactory ToolBox and wrote by Yannick Copin."""
+
+    f = x**2 / 299792458. * 1.e-10 # Conversion factor
+
+    if backward:
+        f = 1./f
+    if var is None:                # Return converted signal
+        return y * f
+    else:                          # Return converted variance
+        return var * f**2
+
+def flbda2ABmag(x, y, ABmag0=48.59, var=None):
+    """Convert *x* [A], *y* [erg/s/cm2/A] to `ABmag =
+    -2.5*log10(erg/s/cm2/Hz) - ABmag0`. Set `var=var(y)` to get
+    variance.  Function from SNFactory ToolBox and wrote by Yannick Copin."""
+
+    z = flbda2fnu(x,y)
+    if var is None:
+        return -2.5*np.log10(z) - ABmag0
+    else:
+        return (2.5/np.log(10)/z)**2 * flbda2fnu(x,y,var=var)
