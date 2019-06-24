@@ -404,3 +404,27 @@ def correlation_weighted(x, y, w=None, axis=None,
     else:
         return rho,drm,drp                             # Assymmetric errors
 
+
+def flbda2fnu(x, y, var=None, backward=False):
+    """Convert *x* [A], *y* [erg/s/cm2/A] to *y* [erg/s/cm2/Hz]. 
+    Set `var=var(y)` to get variance. Function from SNFactory ToolBox and wrote by Yannick Copin."""
+
+    f = x**2 / 299792458. * 1.e-10 # Conversion factor
+
+    if backward:
+        f = 1./f
+    if var is None:                # Return converted signal
+        return y * f
+    else:                          # Return converted variance
+        return var * f**2
+
+def flbda2ABmag(x, y, ABmag0=48.59, var=None):
+    """Convert *x* [A], *y* [erg/s/cm2/A] to `ABmag =
+    -2.5*log10(erg/s/cm2/Hz) - ABmag0`. Set `var=var(y)` to get
+    variance.  Function from SNFactory ToolBox and wrote by Yannick Copin."""
+
+    z = flbda2fnu(x,y)
+    if var is None:
+        return -2.5*np.log10(z) - ABmag0
+    else:
+        return (2.5/np.log(10)/z)**2 * flbda2fnu(x,y,var=var)
