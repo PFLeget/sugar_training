@@ -25,6 +25,7 @@ from .math_toolbox import loess
 from .math_toolbox import correlation_weighted
 from .math_toolbox import correlation_significance
 from .math_toolbox import neff_weighted
+from .math_toolbox import passage_plus_plus
 
 from .extinction import extinctionLaw
 from .emfa_analysis import run_emfa_analysis

@@ -629,7 +629,7 @@ class sugar_fitting:
         self.chi2_save.append(self.chi2)
 
         i = 0
-        while self.chi2_save[-2]-self.chi2_save[-1]>1e-4:
+        while self.chi2_save[-2]-self.chi2_save[-1]>1e-3:
 
             self.e_step()
 

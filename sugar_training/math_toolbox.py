@@ -110,6 +110,33 @@ def passage_error(norm_error1,vecteur_propre,sub_space,return_std=False):
     else:
         return cov_Y
 
+def passage_plus_plus(data, eig_vec, err=None, cov=None, sub_space=None):
+ 
+    if err is None and cov is None:
+        raise ValueError('besoin de cov ou de err')
+
+    if sub_space is not None:
+        vec = np.zeros((len(data[0]),sub_space))
+        for vector in range(sub_space):
+            vec[:,vector] = eig_vec[:,vector]
+    else:
+        vec = eig_vec
+        sub_space = len(vec[0])
+
+    projection = np.zeros((len(data[:,0]), sub_space))
+    projection_cov = np.zeros((len(data[:,0]), sub_space, sub_space))
+
+    for sn in range(len(data[:,0])):
+        if cov is None:
+            w = np.eye(len(data[0])) * 1./err[sn]**2
+        else:
+            w = np.linalg.inv(cov[sn])
+        A = np.linalg.inv(np.dot(vec.T, w.dot(vec)))
+        projection[sn] = np.dot(A, np.dot(vec.T, w.dot(data[sn])))
+        projection_cov[sn] = A
+
+    return projection, projection_cov
+
 def biweight_M(sample,CSTD=6.):
     """
     average using biweight (beers 90)
