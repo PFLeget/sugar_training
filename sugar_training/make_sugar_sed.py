@@ -109,7 +109,10 @@ class load_data_to_build_sugar:
         self.lssfr = lssfr_ordered 
         self.lssfr_err = np.array(lssfr_err)
         final_data = np.array(data_resized)
-        final_data[:,3] = (final_data[:,3] - np.mean(final_data[:,3]) ) / np.std(final_data[:,3])
+        self.std = np.zeros(4)
+        for k in range(4):  
+            self.std[k] = np.std(final_data[:,k])
+            final_data[:,k] = (final_data[:,k] - np.mean(final_data[:,k]) ) / self.std[k]
         self.new_data = final_data
         self.sn_name = self.sn_name[FILTRE]
         self.N_sn = len(self.sn_name)
@@ -134,7 +137,11 @@ class load_data_to_build_sugar:
         cov = np.zeros((len(self.new_data), 4, 4))
         for sn in range(len(self.new_data)):
             cov[sn,:3,:3] = self.Cov_error[sn]
-            cov[sn, 3, 3] = self.lssfr_err[sn]             
+            cov[sn, 3, 3] = self.lssfr_err[sn]
+            # norm error 
+        for i in range(4):
+            for j in range(4):
+                cov[:, i, j] /= self.std[i]*self.std[j]
         
         C = (dat.transpose()).dot(dat) / (len(dat)-1)        
         val, vec = np.linalg.eig(C)        
